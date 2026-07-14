@@ -45,12 +45,12 @@ static void session_created(GObject *obj, GAsyncResult *res, gpointer data) {
                     screen_share);
 }
 
-ScreenShare *screen_share_new(void (*func)(ScreenShare *)) {
+ScreenShare *screen_share_new(ScreenShareCreatedCallback on_ready) {
 
   ScreenShare *new_screen_share = calloc(1, sizeof(ScreenShare));
   if (new_screen_share == NULL)
     return NULL;
-  new_screen_share->ready = func;
+  new_screen_share->ready = on_ready;
 
   new_screen_share->portal = xdp_portal_new();
 

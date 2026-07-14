@@ -1,6 +1,7 @@
 #ifndef SCREEN_SHARE_H
 #define SCREEN_SHARE_H
 
+#include <gst/gst.h>
 #include <libportal/portal.h>
 
 typedef struct _ScreenShare ScreenShare;
@@ -11,7 +12,8 @@ struct _ScreenShare {
   XdpSession *session;
   int fd;
   char *path;
-  void (*ready)(ScreenShare *);
+  ScreenShareCreatedCallback ready;
+  GstElement *src;
 };
 
 ScreenShare *screen_share_new(ScreenShareCreatedCallback);
