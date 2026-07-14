@@ -14,16 +14,25 @@ static void session_started(GObject *obj, GAsyncResult *res, gpointer data) {
   if (session == NULL)
     return;
 
-  char *pipelinestr =
-      "compositor name=comp sink_1::width=420 sink_1::height=240 "
-      "sink_1::xpos=100 sink_1::ypos=100 ! "
-      "xvimagesink "
-      "pipewiresrc ! tee name=sp ! comp.sink_0 "
-      "videotestsrc ! video/x-raw,width=420,height=240 ! comp.sink_1";
+  // g_print("session start\n");
+  ret = xdp_session_get_streams(session);
 
-  // xdp_session_open_pipewire_remote(session);
+  guint32 node_id;
+  // g_print("%s\n", g_variant_print(ret, FALSE));
 
-  GstElement *pipeline = gst_parse_launch(pipelinestr, NULL);
+  for (gsize i = 0; i < g_variant_n_children(ret); i++) {
+    g_autoptr(GVariant) elem = g_variant_get_child_value(ret, i);
+
+    g_variant_get(elem, "(ua{sv})", &node_id, NULL);
+    // g_print("%d\n", node_id);
+  }
+
+  char buf[500];
+  sprintf(buf, "pipewiresrc path=%u ! videoconvert ! xvimagesink", node_id);
+
+  xdp_session_open_pipewire_remote(session);
+
+  GstElement *pipeline = gst_parse_launch(buf, NULL);
   gst_element_set_state(pipeline, GST_STATE_PLAYING);
 }
 
