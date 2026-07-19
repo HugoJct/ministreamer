@@ -1,6 +1,8 @@
 src = [
-  'main.c',
+  'GStreamerHandling.c',
   'ScreenShare.c',
+  'ui.c',
+  'main.c'
 ]
 
 gtk4_dep = dependency('gtk4')
