@@ -10,7 +10,6 @@ typedef void (*ScreenShareCreatedCallback)(ScreenShare *);
 struct _ScreenShare {
   XdpPortal *portal;
   XdpSession *session;
-  int fd;
   char *path;
   ScreenShareCreatedCallback ready;
   GstElement *src;
