@@ -1,7 +1,6 @@
 #include <gst/gst.h>
 #include <gtk/gtk.h>
 #include <libportal/portal.h>
-#include <stdio.h>
 
 #include "GStreamerHandling.h"
 #include "ScreenShare.h"
@@ -9,28 +8,6 @@
 
 ScreenShare *sc1 = NULL;
 ScreenShare *sc2 = NULL;
-
-static void created(ScreenShare *sc_sh) {
-  static int id = 0;
-
-  char buf[20];
-  snprintf(buf, 20, "pipewiresrc_%d", id++);
-
-  sc_sh->src = gst_element_factory_make("pipewiresrc", buf);
-  g_object_set(sc_sh->src, "path", sc_sh->path, NULL);
-
-  gst_bin_add_many(GST_BIN(pipeline), sc_sh->src, NULL);
-
-  GstPad *sink0 = gst_element_request_pad_simple(compositor, "sink_%u");
-
-  GstPad *sc1src = gst_element_get_static_pad(sc_sh->src, "src");
-  gst_pad_link(sc1src, sink0);
-
-  gst_object_unref(sink0);
-  gst_object_unref(sc1src);
-
-  gst_element_set_state(pipeline, GST_STATE_PLAYING);
-}
 
 static void quit(GtkWindow *window) {
   gst_element_set_state(pipeline, GST_STATE_NULL);
@@ -41,14 +18,14 @@ static void button1_click(GtkButton *self, gpointer user_data) {
   if (sc1 != NULL)
     return;
 
-  sc1 = screen_share_new(created);
+  sc1 = screen_share_new(gstreamer_handling_add_screen_share);
 }
 
 static void button2_click(GtkButton *self, gpointer user_data) {
   if (sc2 != NULL)
     return;
 
-  sc2 = screen_share_new(created);
+  sc2 = screen_share_new(gstreamer_handling_add_screen_share);
 }
 
 int main(int argc, char **argv) {
@@ -60,8 +37,6 @@ int main(int argc, char **argv) {
   if (ret < 0) {
     goto error;
   }
-
-  // sc2 = screen_share_new(created);
 
   GtkApplication *app;
   int status;
