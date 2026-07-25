@@ -1,6 +1,7 @@
 #include "ScreenShare.h"
 #include "MinistreamerGstPipeline.h"
 #include "glib-object.h"
+#include "gst/gstelement.h"
 
 #include <stdio.h>
 
@@ -80,23 +81,37 @@ void screen_share_add_to_ministreamer_gst_pipeline(ScreenShare *sc_sh,
 
   MinistreamerGstPipeline *target = MINISTREAMER_GST_PIPELINE(user_data);
 
-  char buf[20];
-  snprintf(buf, 20, "pipewiresrc_%d", screen_share_id++);
+  char buf_src[20];
+  snprintf(buf_src, 20, "pipewiresrc_%d", screen_share_id);
 
-  sc_sh->src = gst_element_factory_make("pipewiresrc", buf);
+  char buf_queue[20];
+  snprintf(buf_queue, 20, "queue_%d", screen_share_id);
+
+  screen_share_id++;
+
+  sc_sh->src = gst_element_factory_make("pipewiresrc", buf_src);
   g_object_set(sc_sh->src, "path", sc_sh->path, NULL);
 
-  gst_bin_add_many(GST_BIN(target->pipeline), sc_sh->src, NULL);
+  sc_sh->queue = gst_element_factory_make("queue", buf_queue);
+  g_object_set(sc_sh->queue, "leaky", 2, NULL);
+
+  gst_bin_add_many(GST_BIN(target->pipeline), sc_sh->src, sc_sh->queue, NULL);
 
   GstPad *sink0 = gst_element_request_pad_simple(target->compositor, "sink_%u");
 
-  GstPad *sc1src = gst_element_get_static_pad(sc_sh->src, "src");
+  GstPad *sc1src = gst_element_get_static_pad(sc_sh->queue, "src");
   gst_pad_link(sc1src, sink0);
+
+  gst_element_link(sc_sh->src, sc_sh->queue);
 
   gst_object_unref(sink0);
   gst_object_unref(sc1src);
 
   g_array_append_val(target->srcs, sc_sh);
+
+  gst_element_set_state(sc_sh->src, GST_STATE_PAUSED);
+  gst_element_set_state(sc_sh->queue, GST_STATE_PAUSED);
+  gst_bin_sync_children_states(GST_BIN(target->pipeline));
 
   gst_element_set_state(target->pipeline, GST_STATE_PLAYING);
 }

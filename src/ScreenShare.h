@@ -12,6 +12,7 @@ struct _ScreenShare {
   XdpSession *session;
   char *path;
   GstElement *src;
+  GstElement *queue;
 };
 
 #define SCREEN_TYPE_SHARE (screen_share_get_type())
