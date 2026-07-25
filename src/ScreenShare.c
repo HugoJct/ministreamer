@@ -9,7 +9,22 @@ G_DEFINE_TYPE(ScreenShare, screen_share, G_TYPE_OBJECT)
 
 enum { SIGNAL_READY, SIGNAL_LAST };
 
+enum { PROP_NAME = 1, PROP_LAST };
+
 static guint screen_share_signals[SIGNAL_LAST];
+
+static void screen_share_get_property(GObject *object, guint property_id,
+                                      GValue *value, GParamSpec *prspec) {
+  ScreenShare *self = SCREEN_SHARE(object);
+  switch (property_id) {
+  case PROP_NAME:
+    g_value_set_string(value, self->name);
+    break;
+  default:
+    G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, prspec);
+    break;
+  }
+}
 
 static void session_started(GObject *obj, GAsyncResult *res, gpointer data) {
   ScreenShare *screen_share = (ScreenShare *)data;
@@ -59,6 +74,15 @@ static void screen_share_class_init(ScreenShareClass *klass) {
   screen_share_signals[SIGNAL_READY] =
       g_signal_new("ready", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST, 0,
                    NULL, NULL, NULL, G_TYPE_NONE, 0);
+
+  GObjectClass *object_class = G_OBJECT_CLASS(klass);
+
+  object_class->get_property = screen_share_get_property;
+
+  g_object_class_install_property(
+      object_class, PROP_NAME,
+      g_param_spec_string("name", NULL, NULL, NULL,
+                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 }
 
 static void screen_share_init(ScreenShare *self) {
@@ -81,15 +105,14 @@ void screen_share_add_to_ministreamer_gst_pipeline(ScreenShare *sc_sh,
 
   MinistreamerGstPipeline *target = MINISTREAMER_GST_PIPELINE(user_data);
 
-  char buf_src[20];
-  snprintf(buf_src, 20, "pipewiresrc_%d", screen_share_id);
+  snprintf(sc_sh->name, 20, "pipewiresrc_%d", screen_share_id);
 
   char buf_queue[20];
   snprintf(buf_queue, 20, "queue_%d", screen_share_id);
 
   screen_share_id++;
 
-  sc_sh->src = gst_element_factory_make("pipewiresrc", buf_src);
+  sc_sh->src = gst_element_factory_make("pipewiresrc", sc_sh->name);
   g_object_set(sc_sh->src, "path", sc_sh->path, NULL);
 
   sc_sh->queue = gst_element_factory_make("queue", buf_queue);
@@ -107,7 +130,7 @@ void screen_share_add_to_ministreamer_gst_pipeline(ScreenShare *sc_sh,
   gst_object_unref(sink0);
   gst_object_unref(sc1src);
 
-  g_array_append_val(target->srcs, sc_sh);
+  g_list_store_append(target->srcs, sc_sh);
 
   gst_element_set_state(sc_sh->src, GST_STATE_PAUSED);
   gst_element_set_state(sc_sh->queue, GST_STATE_PAUSED);

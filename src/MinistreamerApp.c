@@ -4,6 +4,8 @@
 #include "ScreenShare.h"
 #include "gio/gio.h"
 #include "glib-object.h"
+#include "gtk/gtk.h"
+#include "gtk/gtksingleselection.h"
 
 G_DEFINE_TYPE(MinistreamerApp, ministreamer_app, GTK_TYPE_APPLICATION)
 
@@ -57,6 +59,11 @@ static void ministreamer_app_activate(GApplication *app) {
   g_object_get(self->pipeline->displaysink, "paintable", &paintable, NULL);
   gtk_picture_set_paintable(GTK_PICTURE(win->video), paintable);
   g_object_unref(paintable);
+
+  GtkSelectionModel *selection =
+      GTK_SELECTION_MODEL(gtk_single_selection_new(G_LIST_MODEL(self->pipeline->srcs)));
+  gtk_column_view_set_model(GTK_COLUMN_VIEW(win->column_view),
+                            GTK_SELECTION_MODEL(selection));
 }
 
 static void ministreamer_app_class_init(MinistreamerAppClass *klass) {

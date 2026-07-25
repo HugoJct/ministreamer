@@ -1,12 +1,13 @@
 #ifndef GSTREAMER_HANDLING_H
 #define GSTREAMER_HANDLING_H
 
+#include "gio/gio.h"
 #include <gst/gst.h>
 
 struct _MinistreamerGstPipeline {
   GObject parent;
 
-  GArray *srcs;
+  GListStore *srcs;
 
   GstElement *compositor;
   GstElement *displaysink;

@@ -9,6 +9,7 @@ struct _MinistreamerWindow {
   GtkApplicationWindow parent;
 
   GtkWidget *video;
+  GtkWidget *column_view;
   GtkWidget *start_screenshare_1_button;
   GtkWidget *start_screenshare_2_button;
   GtkWidget *quit_button;

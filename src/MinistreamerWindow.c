@@ -23,6 +23,8 @@ static void ministreamer_window_class_init(MinistreamerWindowClass *klass) {
                                        MinistreamerWindow, settings);
   gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(klass),
                                        MinistreamerWindow, video);
+  gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(klass),
+                                       MinistreamerWindow, column_view);
 }
 
 static void ministreamer_window_init(MinistreamerWindow *self) {

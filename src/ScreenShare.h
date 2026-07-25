@@ -11,6 +11,7 @@ struct _ScreenShare {
   XdpPortal *portal;
   XdpSession *session;
   char *path;
+  char name[20];
   GstElement *src;
   GstElement *queue;
 };

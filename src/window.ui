@@ -18,15 +18,43 @@
     <child>
       <object id="grid" class="GtkBox">
         <property name="orientation">vertical</property>
+
         <child>
           <object id="video" class="GtkPicture">
           </object>
         </child>
+
         <child>
-          <object id="start_screenshare_1_button" class="GtkButton">
-            <property name="label">Screenshare 1</property>
+          <object id="box" class="GtkBox">
+            <property name="orientation">horizontal</property>
+
+            <child>
+              <object class="GtkColumnView" id="column_view">
+                <property name="single-click-activate">false</property>
+                <property name="vexpand">true</property>
+                <property name="hexpand">true</property>
+                <child>
+                  <object class="GtkColumnViewColumn" id="column1">
+                    <property name="title">Screen share</property>
+                    <property name="factory">
+                      <object class="GtkBuilderListItemFactory">
+                        <property name="resource">/org/gtk/ministreamer/item.ui</property>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+              </object>
+            </child>
+
+            <child>
+              <object id="start_screenshare_1_button" class="GtkButton">
+                <property name="label">Screenshare 1</property>
+              </object>
+            </child>
+
           </object>
         </child>
+
       </object>
     </child>
   </template>

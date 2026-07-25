@@ -3,6 +3,7 @@
   <gresource prefix="/org/gtk/ministreamer">
     <file preprocess="xml-stripblanks">window.ui</file>
     <file preprocess="xml-stripblanks">settings.ui</file>
+    <file preprocess="xml-stripblanks">item.ui</file>
   </gresource>
 </gresources>
 

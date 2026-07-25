@@ -10,7 +10,7 @@ ministreamer_gst_pipeline_class_init(MinistreamerGstPipelineClass *klass) {}
 
 static void ministreamer_gst_pipeline_init(MinistreamerGstPipeline *self) {
 
-  self->srcs = g_array_new(FALSE, FALSE, sizeof(ScreenShare));
+  self->srcs = g_list_store_new(SCREEN_TYPE_SHARE);
 
   self->pipeline = gst_pipeline_new("mypipeline");
   self->compositor = gst_element_factory_make("compositor", "compositor");
