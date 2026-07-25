@@ -16,42 +16,15 @@
     </child>
 
     <child>
-      <object id="grid" class="GtkGrid">
+      <object id="grid" class="GtkBox">
+        <property name="orientation">vertical</property>
         <child>
           <object id="video" class="GtkPicture">
-            <layout>
-              <property name="column">0</property>
-              <property name="row">0</property>
-              <property name="column-span">2</property>
-            </layout>
           </object>
         </child>
         <child>
           <object id="start_screenshare_1_button" class="GtkButton">
             <property name="label">Screenshare 1</property>
-            <layout>
-              <property name="column">0</property>
-              <property name="row">1</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <object id="start_screenshare_2_button" class="GtkButton">
-            <property name="label">Screenshare 2</property>
-            <layout>
-              <property name="column">1</property>
-              <property name="row">1</property>
-            </layout>
-          </object>
-        </child>
-        <child>
-          <object id="quit_button" class="GtkButton">
-            <property name="label">Quit</property>
-            <layout>
-              <property name="column">0</property>
-              <property name="row">2</property>
-              <property name="column-span">2</property>
-            </layout>
           </object>
         </child>
       </object>

@@ -1,20 +1,24 @@
 #ifndef SCREEN_SHARE_H
 #define SCREEN_SHARE_H
 
+#include "glib-object.h"
 #include <gst/gst.h>
 #include <libportal/portal.h>
 
-typedef struct _ScreenShare ScreenShare;
-typedef void (*ScreenShareCreatedCallback)(ScreenShare *);
-
 struct _ScreenShare {
+  GObject parent;
+
   XdpPortal *portal;
   XdpSession *session;
   char *path;
-  ScreenShareCreatedCallback ready;
   GstElement *src;
 };
 
-ScreenShare *screen_share_new(ScreenShareCreatedCallback);
+#define SCREEN_TYPE_SHARE (screen_share_get_type())
+G_DECLARE_FINAL_TYPE(ScreenShare, screen_share, SCREEN, SHARE, GObject)
+
+ScreenShare *screen_share_new();
+void screen_share_add_to_ministreamer_gst_pipeline(ScreenShare *sc_sh,
+                                                   gpointer user_data);
 
 #endif

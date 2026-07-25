@@ -1,21 +1,34 @@
 #include "MinistreamerApp.h"
 
 #include "MinistreamerWindow.h"
+#include "ScreenShare.h"
 #include "gio/gio.h"
+#include "glib-object.h"
 
 G_DEFINE_TYPE(MinistreamerApp, ministreamer_app, GTK_TYPE_APPLICATION)
 
 static void preferences_activated(GSimpleAction *action, GVariant *parameter,
                                   gpointer app) {}
 
-static void quit_activated(GSimpleAction *action, GVariant *parameter,
-                           gpointer app) {
+static void ministreamer_app_quit_clicked(GSimpleAction *action,
+                                          GVariant *parameter, gpointer app) {
+  gst_element_set_state(MINISTREAMER_APP(app)->pipeline->pipeline,
+                        GST_STATE_NULL);
   g_application_quit(G_APPLICATION(app));
+}
+
+static void ministreamer_app_start_new_screenshare(GtkButton *self,
+                                                   gpointer user_data) {
+  MinistreamerApp *app = MINISTREAMER_APP(user_data);
+  ScreenShare *new = screen_share_new();
+  g_signal_connect(new, "ready",
+                   G_CALLBACK(screen_share_add_to_ministreamer_gst_pipeline),
+                   app->pipeline);
 }
 
 static GActionEntry app_entries[] = {
     {"preferences", preferences_activated, NULL, NULL, NULL},
-    {"quit", quit_activated, NULL, NULL, NULL},
+    {"quit", ministreamer_app_quit_clicked, NULL, NULL, NULL},
 };
 
 static const char *quit_shortcut[2] = {"<Ctrl>Q", NULL};
@@ -37,15 +50,11 @@ static void ministreamer_app_activate(GApplication *app) {
 
   MinistreamerApp *self = MINISTREAMER_APP(app);
 
-  g_signal_connect_swapped(win->start_screenshare_1_button, "clicked",
-                           G_CALLBACK(self->on_activate.button1_clicked), win);
-  g_signal_connect_swapped(win->start_screenshare_2_button, "clicked",
-                           G_CALLBACK(self->on_activate.button2_clicked), win);
-  g_signal_connect_swapped(win->quit_button, "clicked",
-                           G_CALLBACK(self->on_activate.quit), win);
+  g_signal_connect(win->start_screenshare_1_button, "clicked",
+                   G_CALLBACK(ministreamer_app_start_new_screenshare), self);
 
   g_autoptr(GdkPaintable) paintable = NULL;
-  g_object_get(self->on_activate.displaysink, "paintable", &paintable, NULL);
+  g_object_get(self->pipeline->displaysink, "paintable", &paintable, NULL);
   gtk_picture_set_paintable(GTK_PICTURE(win->video), paintable);
   g_object_unref(paintable);
 }
@@ -58,11 +67,11 @@ static void ministreamer_app_class_init(MinistreamerAppClass *klass) {
 
 static void ministreamer_app_init(MinistreamerApp *self) {}
 
-MinistreamerApp *ministreamer_app_new(ActivateParams params) {
+MinistreamerApp *ministreamer_app_new() {
   MinistreamerApp *app = g_object_new(MINISTREAMER_APP_TYPE, "application-id",
                                       "fr.jacotot.ministreamer", NULL);
 
-  app->on_activate = params;
+  app->pipeline = ministreamer_gst_pipeline_new();
 
   return app;
 }

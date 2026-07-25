@@ -9,7 +9,7 @@ resources = gnome.compile_resources('ministreamer_resources',
   source_dir: meson.current_source_dir())
 
 src = [
-  'GStreamerHandling.c',
+  'MinistreamerGstPipeline.c',
   'ScreenShare.c',
   'MinistreamerWindow.c',
   'MinistreamerApp.c',

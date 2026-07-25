@@ -1,6 +1,14 @@
 #include "ScreenShare.h"
+#include "MinistreamerGstPipeline.h"
+#include "glib-object.h"
 
 #include <stdio.h>
+
+G_DEFINE_TYPE(ScreenShare, screen_share, G_TYPE_OBJECT)
+
+enum { SIGNAL_READY, SIGNAL_LAST };
+
+static guint screen_share_signals[SIGNAL_LAST];
 
 static void session_started(GObject *obj, GAsyncResult *res, gpointer data) {
   ScreenShare *screen_share = (ScreenShare *)data;
@@ -28,7 +36,8 @@ static void session_started(GObject *obj, GAsyncResult *res, gpointer data) {
   strncpy(screen_share->path, buf, len);
 
   xdp_session_open_pipewire_remote(screen_share->session);
-  screen_share->ready(screen_share);
+
+  g_signal_emit(screen_share, screen_share_signals[SIGNAL_READY], 0);
 }
 
 static void session_created(GObject *obj, GAsyncResult *res, gpointer data) {
@@ -45,21 +54,49 @@ static void session_created(GObject *obj, GAsyncResult *res, gpointer data) {
                     screen_share);
 }
 
-ScreenShare *screen_share_new(ScreenShareCreatedCallback on_ready) {
+static void screen_share_class_init(ScreenShareClass *klass) {
+  screen_share_signals[SIGNAL_READY] =
+      g_signal_new("ready", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST, 0,
+                   NULL, NULL, NULL, G_TYPE_NONE, 0);
+}
 
-  ScreenShare *new_screen_share = calloc(1, sizeof(ScreenShare));
-  if (new_screen_share == NULL)
-    return NULL;
-  new_screen_share->ready = on_ready;
+static void screen_share_init(ScreenShare *self) {
 
-  new_screen_share->portal = xdp_portal_new();
+  self->portal = xdp_portal_new();
 
   xdp_portal_create_screencast_session(
-      new_screen_share->portal,
-      XDP_OUTPUT_MONITOR | XDP_OUTPUT_VIRTUAL | XDP_OUTPUT_WINDOW,
+      self->portal, XDP_OUTPUT_MONITOR | XDP_OUTPUT_VIRTUAL | XDP_OUTPUT_WINDOW,
       XDP_SCREENCAST_FLAG_NONE, XDP_CURSOR_MODE_EMBEDDED,
-      XDP_PERSIST_MODE_TRANSIENT, NULL, NULL, session_created,
-      new_screen_share);
+      XDP_PERSIST_MODE_TRANSIENT, NULL, NULL, session_created, self);
+}
 
-  return new_screen_share;
+ScreenShare *screen_share_new() {
+  return g_object_new(SCREEN_TYPE_SHARE, NULL);
+}
+
+void screen_share_add_to_ministreamer_gst_pipeline(ScreenShare *sc_sh,
+                                                   gpointer user_data) {
+  static int screen_share_id = 0;
+
+  MinistreamerGstPipeline *target = MINISTREAMER_GST_PIPELINE(user_data);
+
+  char buf[20];
+  snprintf(buf, 20, "pipewiresrc_%d", screen_share_id++);
+
+  sc_sh->src = gst_element_factory_make("pipewiresrc", buf);
+  g_object_set(sc_sh->src, "path", sc_sh->path, NULL);
+
+  gst_bin_add_many(GST_BIN(target->pipeline), sc_sh->src, NULL);
+
+  GstPad *sink0 = gst_element_request_pad_simple(target->compositor, "sink_%u");
+
+  GstPad *sc1src = gst_element_get_static_pad(sc_sh->src, "src");
+  gst_pad_link(sc1src, sink0);
+
+  gst_object_unref(sink0);
+  gst_object_unref(sc1src);
+
+  g_array_append_val(target->srcs, sc_sh);
+
+  gst_element_set_state(target->pipeline, GST_STATE_PLAYING);
 }

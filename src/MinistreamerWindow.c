@@ -19,12 +19,12 @@ static void ministreamer_window_class_init(MinistreamerWindowClass *klass) {
 
   gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(klass),
                                        MinistreamerWindow, start_screenshare_1_button);
-  gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(klass),
-                                       MinistreamerWindow, start_screenshare_2_button);
+  // gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(klass),
+  //                                      MinistreamerWindow, start_screenshare_2_button);
   gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(klass),
                                        MinistreamerWindow, settings);
-  gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(klass),
-                                       MinistreamerWindow, quit_button);
+  // gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(klass),
+  //                                      MinistreamerWindow, quit_button);
   gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(klass),
                                        MinistreamerWindow, video);
 }
