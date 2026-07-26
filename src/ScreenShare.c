@@ -2,14 +2,24 @@
 #include "MinistreamerGstPipeline.h"
 #include "glib-object.h"
 #include "gst/gstelement.h"
+#include "gst/gstpad.h"
 
+#include <limits.h>
 #include <stdio.h>
 
 G_DEFINE_TYPE(ScreenShare, screen_share, G_TYPE_OBJECT)
 
 enum { SIGNAL_READY, SIGNAL_LAST };
 
-enum { PROP_NAME = 1, PROP_LAST };
+enum {
+  PROP_NAME = 1,
+  PROP_XPOS,
+  PROP_YPOS,
+  PROP_ZORDER,
+  PROP_WIDTH,
+  PROP_HEIGHT,
+  PROP_LAST
+};
 
 static guint screen_share_signals[SIGNAL_LAST];
 
@@ -19,6 +29,47 @@ static void screen_share_get_property(GObject *object, guint property_id,
   switch (property_id) {
   case PROP_NAME:
     g_value_set_string(value, self->name);
+    break;
+  case PROP_XPOS:
+    g_value_set_uint(value, self->xpos);
+    break;
+  case PROP_YPOS:
+    g_value_set_uint(value, self->ypos);
+    break;
+  case PROP_ZORDER:
+    g_value_set_uint(value, self->zorder);
+    break;
+  case PROP_WIDTH:
+    g_value_set_uint(value, self->width);
+    break;
+  case PROP_HEIGHT:
+    g_value_set_uint(value, self->height);
+    break;
+  default:
+    G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, prspec);
+    break;
+  }
+}
+
+static void screen_share_set_property(GObject *object, guint property_id,
+                                      const GValue *value, GParamSpec *prspec) {
+
+  ScreenShare *self = SCREEN_SHARE(object);
+  switch (property_id) {
+  case PROP_XPOS:
+    self->xpos = g_value_get_uint(value);
+    break;
+  case PROP_YPOS:
+    self->ypos = g_value_get_uint(value);
+    break;
+  case PROP_ZORDER:
+    self->zorder = g_value_get_uint(value);
+    break;
+  case PROP_WIDTH:
+    self->width = g_value_get_uint(value);
+    break;
+  case PROP_HEIGHT:
+    self->height = g_value_get_uint(value);
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, prspec);
@@ -78,11 +129,37 @@ static void screen_share_class_init(ScreenShareClass *klass) {
   GObjectClass *object_class = G_OBJECT_CLASS(klass);
 
   object_class->get_property = screen_share_get_property;
+  object_class->set_property = screen_share_set_property;
 
   g_object_class_install_property(
       object_class, PROP_NAME,
       g_param_spec_string("name", NULL, NULL, NULL,
                           G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property(
+      object_class, PROP_XPOS,
+      g_param_spec_uint("xpos", NULL, NULL, 0, UINT_MAX, 0,
+                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property(
+      object_class, PROP_XPOS,
+      g_param_spec_uint("zorder", NULL, NULL, 0, UINT_MAX, 0,
+                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property(
+      object_class, PROP_YPOS,
+      g_param_spec_uint("ypos", NULL, NULL, 0, UINT_MAX, 0,
+                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property(
+      object_class, PROP_WIDTH,
+      g_param_spec_uint("width", NULL, NULL, 0, UINT_MAX, 0,
+                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property(
+      object_class, PROP_HEIGHT,
+      g_param_spec_uint("height", NULL, NULL, 0, UINT_MAX, 0,
+                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 }
 
 static void screen_share_init(ScreenShare *self) {
@@ -93,6 +170,12 @@ static void screen_share_init(ScreenShare *self) {
       self->portal, XDP_OUTPUT_MONITOR | XDP_OUTPUT_VIRTUAL | XDP_OUTPUT_WINDOW,
       XDP_SCREENCAST_FLAG_NONE, XDP_CURSOR_MODE_EMBEDDED,
       XDP_PERSIST_MODE_TRANSIENT, NULL, NULL, session_created, self);
+
+  self->xpos = 0;
+  self->ypos = 0;
+  self->zorder = 0;
+  self->width = 0;
+  self->height = 0;
 }
 
 ScreenShare *screen_share_new() {
@@ -122,19 +205,66 @@ void screen_share_add_to_ministreamer_gst_pipeline(ScreenShare *sc_sh,
 
   GstPad *sink0 = gst_element_request_pad_simple(target->compositor, "sink_%u");
 
-  GstPad *sc1src = gst_element_get_static_pad(sc_sh->queue, "src");
-  gst_pad_link(sc1src, sink0);
-
   gst_element_link(sc_sh->src, sc_sh->queue);
 
+  GstPad *newsrcpad = gst_element_get_static_pad(sc_sh->queue, "src");
+  gst_pad_link(newsrcpad, sink0);
+
   gst_object_unref(sink0);
-  gst_object_unref(sc1src);
+  gst_object_unref(newsrcpad);
 
   g_list_store_append(target->srcs, sc_sh);
 
-  gst_element_set_state(sc_sh->src, GST_STATE_PAUSED);
-  gst_element_set_state(sc_sh->queue, GST_STATE_PAUSED);
+  // gst_element_set_state(sc_sh->src, GST_STATE_PAUSED);
+  // gst_element_set_state(sc_sh->queue, GST_STATE_PAUSED);
   gst_bin_sync_children_states(GST_BIN(target->pipeline));
 
   gst_element_set_state(target->pipeline, GST_STATE_PLAYING);
+}
+
+static GstPadProbeReturn screen_share_block_source(GstPad *pad,
+                                                   GstPadProbeInfo *info,
+                                                   gpointer user_data) {
+  ScreenShare *share = SCREEN_SHARE(user_data);
+
+  GstPad *queuesrcpad = gst_element_get_static_pad(share->queue, "src");
+
+  GstPad *compositorpad = gst_pad_get_peer(queuesrcpad);
+
+  GstElement *compositor = GST_ELEMENT(gst_pad_get_parent(compositorpad));
+  GstElement *pipeline = GST_ELEMENT(gst_element_get_parent(compositor));
+
+  // gst_element_set_state(share->src, GST_STATE_NULL);
+  // gst_pad_unlink(queuesrcpad, compositorpad);
+  gst_element_unlink_many(share->src, share->queue, compositor, NULL);
+
+  gst_bin_remove_many(GST_BIN(pipeline), share->queue, share->src, NULL);
+  // gst_element_set_state(share->src, GST_STATE_NULL);
+  // gst_element_set_state(share->queue, GST_STATE_NULL);
+
+  // gst_pad_send_event(queuesrcpad, gst_event_new_eos());
+
+  gst_element_release_request_pad(compositor, compositorpad);
+
+  gst_object_unref(pipeline);
+  gst_object_unref(compositor);
+  gst_object_unref(queuesrcpad);
+  gst_object_unref(compositorpad);
+
+  return GST_PAD_PROBE_REMOVE;
+}
+
+void screen_share_remove_from_ministreamer_pipeline(
+    ScreenShare *sc_sh, guint index, MinistreamerGstPipeline *pipeline) {
+
+  GstPad *src = gst_element_get_static_pad(sc_sh->src, "src");
+
+  gst_pad_add_probe(src,
+                    GST_PAD_PROBE_TYPE_PUSH | GST_PAD_PROBE_TYPE_BLOCK |
+                        GST_PAD_PROBE_TYPE_BUFFER,
+                    screen_share_block_source, sc_sh, NULL);
+
+  g_list_store_remove(pipeline->srcs, index);
+
+  gst_object_unref(src);
 }

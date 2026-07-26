@@ -18,7 +18,9 @@ static void ministreamer_window_class_init(MinistreamerWindowClass *klass) {
       GTK_WIDGET_CLASS(klass), "/org/gtk/ministreamer/window.ui");
 
   gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(klass),
-                                       MinistreamerWindow, start_screenshare_1_button);
+                                       MinistreamerWindow, add_screenshare_button);
+  gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(klass),
+                                       MinistreamerWindow, remove_screenshare_button);
   gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(klass),
                                        MinistreamerWindow, settings);
   gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(klass),

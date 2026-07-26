@@ -9,6 +9,7 @@ struct _MinistreamerApp {
   GtkApplication parent;
 
   MinistreamerGstPipeline *pipeline;
+  GtkSelectionModel *selection;
 };
 
 #define MINISTREAMER_APP_TYPE (ministreamer_app_get_type())
