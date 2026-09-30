@@ -210,22 +210,23 @@ void screen_share_add_to_ministreamer_gst_pipeline(ScreenShare *sc_sh,
   gst_bin_add_many(GST_BIN(target->pipeline), sc_sh->src, sc_sh->queue, NULL);
 
   GstPad *sink0 = gst_element_request_pad_simple(target->compositor, "sink_%u");
+  GstPad *newsrcpad = gst_element_get_static_pad(sc_sh->queue, "src");
 
   gst_element_link(sc_sh->src, sc_sh->queue);
 
-  GstPad *newsrcpad = gst_element_get_static_pad(sc_sh->queue, "src");
   gst_pad_link(newsrcpad, sink0);
 
   gst_object_unref(sink0);
   gst_object_unref(newsrcpad);
 
-  g_list_store_append(target->srcs, sc_sh);
-
+  gst_element_sync_state_with_parent(sc_sh->src);
+  gst_element_sync_state_with_parent(sc_sh->queue);
   // gst_element_set_state(sc_sh->src, GST_STATE_PAUSED);
   // gst_element_set_state(sc_sh->queue, GST_STATE_PAUSED);
-  gst_bin_sync_children_states(GST_BIN(target->pipeline));
+  // gst_bin_sync_children_states(GST_BIN(target->pipeline));
 
   gst_element_set_state(target->pipeline, GST_STATE_PLAYING);
+  g_list_store_append(target->srcs, sc_sh);
 }
 
 static gboolean deferred_remove_source(gpointer user_data) {
