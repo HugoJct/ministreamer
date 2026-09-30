@@ -147,18 +147,18 @@ static void screen_share_class_init(ScreenShareClass *klass) {
 
   g_object_class_install_property(
       object_class, PROP_XPOS,
-      g_param_spec_int("xpos", NULL, NULL, 0, INT_MAX, 0,
+      g_param_spec_int("xpos", NULL, NULL, INT_MIN, INT_MAX, 0,
+                       G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property(
+      object_class, PROP_YPOS,
+      g_param_spec_int("ypos", NULL, NULL, INT_MIN, INT_MAX, 0,
                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property(
       object_class, PROP_ZORDER,
       g_param_spec_uint("zorder", NULL, NULL, 0, UINT_MAX, 0,
                         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
-
-  g_object_class_install_property(
-      object_class, PROP_YPOS,
-      g_param_spec_int("ypos", NULL, NULL, 0, INT_MAX, 0,
-                       G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property(
       object_class, PROP_WIDTH,
