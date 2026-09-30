@@ -38,11 +38,11 @@ static void ministreamer_app_remove_screenshare(GtkButton *self,
     return;
   }
 
-  guint index = gtk_single_selection_get_selected(GTK_SINGLE_SELECTION(app->selection));
+  guint index =
+      gtk_single_selection_get_selected(GTK_SINGLE_SELECTION(app->selection));
 
-  screen_share_remove_from_ministreamer_pipeline(selected, index, app->pipeline);
-
-  g_print("%s\n", selected->name);
+  screen_share_remove_from_ministreamer_pipeline(selected, index,
+                                                 app->pipeline);
 }
 
 static GActionEntry app_entries[] = {
