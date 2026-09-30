@@ -15,6 +15,7 @@ struct _ScreenShare {
   char name[20];
   GstElement *src;
   GstElement *queue;
+  GstPad *compositor_pad;
 
   guint xpos;
   guint ypos;

@@ -27,7 +27,6 @@ static guint screen_share_signals[SIGNAL_LAST];
 typedef struct {
   ScreenShare *sc_sh;
   MinistreamerGstPipeline *pipeline;
-  GstPad *compositorpad;
 } RemoveData;
 
 static void screen_share_get_property(GObject *object, guint property_id,
@@ -213,8 +212,8 @@ void screen_share_add_to_ministreamer_gst_pipeline(ScreenShare *sc_sh,
   gst_element_link(sc_sh->src, sc_sh->queue);
 
   gst_pad_link(newsrcpad, sink0);
+  sc_sh->compositor_pad = sink0;
 
-  gst_object_unref(sink0);
   gst_object_unref(newsrcpad);
 
   gst_element_sync_state_with_parent(sc_sh->src);
@@ -231,7 +230,7 @@ static gboolean deferred_remove_source(gpointer user_data) {
   RemoveData *data = (RemoveData *)user_data;
   ScreenShare *sc_sh = data->sc_sh;
   MinistreamerGstPipeline *pipeline = data->pipeline;
-  GstPad *compositorpad = data->compositorpad;
+  GstPad *compositorpad = data->sc_sh->compositor_pad;
 
   gst_element_set_state(sc_sh->src, GST_STATE_NULL);
   gst_element_set_state(sc_sh->queue, GST_STATE_NULL);
@@ -255,16 +254,13 @@ static GstPadProbeReturn screen_share_block_source(GstPad *pad,
 
   GstPad *queuesrcpad = gst_element_get_static_pad(data->sc_sh->queue, "src");
 
-  GstPad *compositorpad = gst_pad_get_peer(queuesrcpad);
-
-  GstElement *compositor = GST_ELEMENT(gst_pad_get_parent(compositorpad));
+  GstElement *compositor =
+      GST_ELEMENT(gst_pad_get_parent(data->sc_sh->compositor_pad));
 
   gst_element_unlink_many(data->sc_sh->src, data->sc_sh->queue, compositor,
                           NULL);
 
-  gst_pad_send_event(compositorpad, gst_event_new_eos());
-
-  data->compositorpad = compositorpad;
+  gst_pad_send_event(data->sc_sh->compositor_pad, gst_event_new_eos());
 
   gst_object_unref(compositor);
   gst_object_unref(queuesrcpad);
