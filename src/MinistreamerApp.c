@@ -78,15 +78,11 @@ static void ministreamer_app_activate(GApplication *app) {
   g_autoptr(GdkPaintable) paintable = NULL;
   g_object_get(self->pipeline->displaysink, "paintable", &paintable, NULL);
   gtk_picture_set_paintable(GTK_PICTURE(win->video), paintable);
-  g_object_unref(paintable);
 
   self->selection = GTK_SELECTION_MODEL(
       gtk_single_selection_new(G_LIST_MODEL(self->pipeline->srcs)));
   gtk_column_view_set_model(GTK_COLUMN_VIEW(win->column_view),
                             GTK_SELECTION_MODEL(self->selection));
-
-  // g_signal_connect(win->aaa, "value-changed", G_CALLBACK(value_changed),
-  // NULL);
 }
 
 static void ministreamer_app_class_init(MinistreamerAppClass *klass) {
