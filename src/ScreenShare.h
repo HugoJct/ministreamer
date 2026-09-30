@@ -3,6 +3,7 @@
 
 #include "MinistreamerGstPipeline.h"
 #include "glib-object.h"
+#include "gtk/gtk.h"
 #include <gst/gst.h>
 #include <libportal/portal.h>
 
@@ -32,5 +33,9 @@ void screen_share_add_to_ministreamer_gst_pipeline(ScreenShare *sc_sh,
                                                    gpointer user_data);
 void screen_share_remove_from_ministreamer_pipeline(
     ScreenShare *sc_sh, guint index, MinistreamerGstPipeline *pipeline);
+
+void screen_share_xpos_changed(GtkSpinButton *spin, GtkListItem *list_item);
+void screen_share_ypos_changed(GtkSpinButton *spin, GtkListItem *list_item);
+void screen_share_zorder_changed(GtkSpinButton *spin, GtkListItem *list_item);
 
 #endif

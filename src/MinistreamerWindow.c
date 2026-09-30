@@ -1,4 +1,5 @@
 #include "MinistreamerWindow.h"
+#include "ScreenShare.h"
 #include "gtk/gtk.h"
 
 G_DEFINE_TYPE(MinistreamerWindow, ministreamer_window,
@@ -27,6 +28,10 @@ static void ministreamer_window_class_init(MinistreamerWindowClass *klass) {
                                        MinistreamerWindow, video);
   gtk_widget_class_bind_template_child(GTK_WIDGET_CLASS(klass),
                                        MinistreamerWindow, column_view);
+
+  gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(klass), screen_share_xpos_changed);
+  gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(klass), screen_share_ypos_changed);
+  gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(klass), screen_share_zorder_changed);
 }
 
 static void ministreamer_window_init(MinistreamerWindow *self) {
