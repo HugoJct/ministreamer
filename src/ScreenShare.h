@@ -17,11 +17,11 @@ struct _ScreenShare {
   GstElement *queue;
   GstPad *compositor_pad;
 
-  guint xpos;
-  guint ypos;
+  gint xpos;
+  gint ypos;
   guint zorder;
-  guint width;
-  guint height;
+  gint width;
+  gint height;
 };
 
 #define SCREEN_TYPE_SHARE (screen_share_get_type())

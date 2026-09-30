@@ -2,8 +2,10 @@
 #include "MinistreamerGstPipeline.h"
 #include "glib-object.h"
 #include "glib.h"
+#include "gmodule.h"
 #include "gst/gstelement.h"
 #include "gst/gstpad.h"
+#include "gtk/gtk.h"
 
 #include <limits.h>
 #include <stdio.h>
@@ -37,19 +39,19 @@ static void screen_share_get_property(GObject *object, guint property_id,
     g_value_set_string(value, self->name);
     break;
   case PROP_XPOS:
-    g_value_set_uint(value, self->xpos);
+    g_value_set_int(value, self->xpos);
     break;
   case PROP_YPOS:
-    g_value_set_uint(value, self->ypos);
+    g_value_set_int(value, self->ypos);
     break;
   case PROP_ZORDER:
     g_value_set_uint(value, self->zorder);
     break;
   case PROP_WIDTH:
-    g_value_set_uint(value, self->width);
+    g_value_set_int(value, self->width);
     break;
   case PROP_HEIGHT:
-    g_value_set_uint(value, self->height);
+    g_value_set_int(value, self->height);
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, prspec);
@@ -61,21 +63,25 @@ static void screen_share_set_property(GObject *object, guint property_id,
                                       const GValue *value, GParamSpec *prspec) {
 
   ScreenShare *self = SCREEN_SHARE(object);
+
   switch (property_id) {
   case PROP_XPOS:
-    self->xpos = g_value_get_uint(value);
+    self->xpos = g_value_get_int(value);
+    g_object_set(G_OBJECT(self->compositor_pad), "xpos", self->xpos, NULL);
     break;
   case PROP_YPOS:
-    self->ypos = g_value_get_uint(value);
+    self->ypos = g_value_get_int(value);
+    g_object_set(G_OBJECT(self->compositor_pad), "ypos", self->ypos, NULL);
     break;
   case PROP_ZORDER:
     self->zorder = g_value_get_uint(value);
+    g_object_set(G_OBJECT(self->compositor_pad), "zorder", self->zorder, NULL);
     break;
   case PROP_WIDTH:
-    self->width = g_value_get_uint(value);
+    self->width = g_value_get_int(value);
     break;
   case PROP_HEIGHT:
-    self->height = g_value_get_uint(value);
+    self->height = g_value_get_int(value);
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, prspec);
@@ -141,8 +147,8 @@ static void screen_share_class_init(ScreenShareClass *klass) {
 
   g_object_class_install_property(
       object_class, PROP_XPOS,
-      g_param_spec_uint("xpos", NULL, NULL, 0, UINT_MAX, 0,
-                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_int("xpos", NULL, NULL, 0, INT_MAX, 0,
+                       G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property(
       object_class, PROP_ZORDER,
@@ -151,18 +157,18 @@ static void screen_share_class_init(ScreenShareClass *klass) {
 
   g_object_class_install_property(
       object_class, PROP_YPOS,
-      g_param_spec_uint("ypos", NULL, NULL, 0, UINT_MAX, 0,
-                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_int("ypos", NULL, NULL, 0, INT_MAX, 0,
+                       G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property(
       object_class, PROP_WIDTH,
-      g_param_spec_uint("width", NULL, NULL, 0, UINT_MAX, 0,
-                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_int("width", NULL, NULL, 0, INT_MAX, 0,
+                       G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_property(
       object_class, PROP_HEIGHT,
-      g_param_spec_uint("height", NULL, NULL, 0, UINT_MAX, 0,
-                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_int("height", NULL, NULL, 0, INT_MAX, 0,
+                       G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 }
 
 static void screen_share_init(ScreenShare *self) {
@@ -287,4 +293,46 @@ void screen_share_remove_from_ministreamer_pipeline(
   g_list_store_remove(pipeline->srcs, index);
 
   gst_object_unref(src);
+}
+
+void screen_share_xpos_changed(GtkSpinButton *spin, GtkListItem *list_item) {
+  ScreenShare *share = SCREEN_SHARE(gtk_list_item_get_item(list_item));
+
+  if (share == NULL) {
+    return;
+  }
+
+  gint new_val = (gint)gtk_spin_button_get_value_as_int(spin);
+
+  if (share->xpos != new_val) {
+    g_object_set(share, "xpos", new_val, NULL);
+  }
+}
+
+void screen_share_ypos_changed(GtkSpinButton *spin, GtkListItem *list_item) {
+  ScreenShare *share = SCREEN_SHARE(gtk_list_item_get_item(list_item));
+
+  if (share == NULL) {
+    return;
+  }
+
+  gint new_val = (gint)gtk_spin_button_get_value_as_int(spin);
+
+  if (share->xpos != new_val) {
+    g_object_set(share, "ypos", new_val, NULL);
+  }
+}
+
+void screen_share_zorder_changed(GtkSpinButton *spin, GtkListItem *list_item) {
+  ScreenShare *share = SCREEN_SHARE(gtk_list_item_get_item(list_item));
+
+  if (share == NULL) {
+    return;
+  }
+
+  guint new_val = (guint)gtk_spin_button_get_value_as_int(spin);
+
+  if (share->xpos != new_val) {
+    g_object_set(share, "zorder", new_val, NULL);
+  }
 }

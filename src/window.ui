@@ -74,6 +74,7 @@
         <property name="climb-rate">1.0</property>
         <property name="digits">0</property>
         <property name="numeric">True</property>
+        <signal name="value-changed" handler="screen_share_xpos_changed" object="GtkListItem" swapped="no"/>
         <property name="adjustment">
           <object class="GtkAdjustment">
             <property name="lower">0.0</property>
@@ -111,6 +112,7 @@
         <property name="climb-rate">1.0</property>
         <property name="digits">0</property>
         <property name="numeric">True</property>
+        <signal name="value-changed" handler="screen_share_ypos_changed" object="GtkListItem" swapped="no"/>
         <property name="adjustment">
           <object class="GtkAdjustment">
             <property name="lower">0.0</property>
@@ -148,6 +150,7 @@
         <property name="climb-rate">1.0</property>
         <property name="digits">0</property>
         <property name="numeric">True</property>
+        <signal name="value-changed" handler="screen_share_zorder_changed" object="GtkListItem" swapped="no"/>
         <property name="adjustment">
           <object class="GtkAdjustment">
             <property name="lower">0.0</property>

@@ -20,5 +20,6 @@ src = [
 executable('ministreamer',
   src,
   dependencies: [libportal_dep, gst_dep, gtk4_dep],
+  export_dynamic: true,
   c_args: ['-g']
 )
