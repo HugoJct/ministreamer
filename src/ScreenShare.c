@@ -1,6 +1,7 @@
 #include "ScreenShare.h"
 #include "MinistreamerGstPipeline.h"
 #include "glib-object.h"
+#include "glib.h"
 #include "gst/gstelement.h"
 #include "gst/gstpad.h"
 
@@ -103,10 +104,7 @@ static void session_started(GObject *obj, GAsyncResult *res, gpointer data) {
     g_variant_get(elem, "(ua{sv})", &node_id, NULL);
   }
 
-  char buf[5];
-  int len = snprintf(buf, 5, "%u", node_id);
-  screen_share->path = malloc(sizeof(char) * len);
-  strncpy(screen_share->path, buf, len);
+  screen_share->path = g_strdup_printf("%u", node_id);
 
   xdp_session_open_pipewire_remote(screen_share->session);
 
