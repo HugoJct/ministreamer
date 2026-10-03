@@ -3,8 +3,10 @@
 #include "glib-object.h"
 #include "glib.h"
 #include "gmodule.h"
+#include "gst/gstcaps.h"
 #include "gst/gstelement.h"
 #include "gst/gstpad.h"
+#include "gst/gststructure.h"
 #include "gtk/gtk.h"
 
 #include <limits.h>
@@ -79,9 +81,11 @@ static void screen_share_set_property(GObject *object, guint property_id,
     break;
   case PROP_WIDTH:
     self->width = g_value_get_int(value);
+    g_object_set(G_OBJECT(self->compositor_pad), "width", self->width, NULL);
     break;
   case PROP_HEIGHT:
     self->height = g_value_get_int(value);
+    g_object_set(G_OBJECT(self->compositor_pad), "height", self->height, NULL);
     break;
   default:
     G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, prspec);
@@ -224,12 +228,21 @@ void screen_share_add_to_ministreamer_gst_pipeline(ScreenShare *sc_sh,
 
   gst_element_sync_state_with_parent(sc_sh->src);
   gst_element_sync_state_with_parent(sc_sh->queue);
-  // gst_element_set_state(sc_sh->src, GST_STATE_PAUSED);
-  // gst_element_set_state(sc_sh->queue, GST_STATE_PAUSED);
-  // gst_bin_sync_children_states(GST_BIN(target->pipeline));
 
   gst_element_set_state(target->pipeline, GST_STATE_PLAYING);
   g_list_store_append(target->srcs, sc_sh);
+
+  GstPad *srcpad = gst_element_get_static_pad(sc_sh->src, "src");
+  GstCaps *srcpadcaps = gst_pad_get_current_caps(srcpad);
+  GstStructure *str = gst_caps_get_structure(srcpadcaps, 0);
+  gint width;
+  gint height;
+  gst_structure_get_int(str, "width", &width);
+  gst_structure_get_int(str, "height", &height);
+  gst_caps_unref(srcpadcaps);
+  gst_object_unref(srcpad);
+
+  g_object_set(sc_sh, "width", width, "height", height, NULL);
 }
 
 static gboolean deferred_remove_source(gpointer user_data) {
@@ -318,7 +331,7 @@ void screen_share_ypos_changed(GtkSpinButton *spin, GtkListItem *list_item) {
 
   gint new_val = (gint)gtk_spin_button_get_value_as_int(spin);
 
-  if (share->xpos != new_val) {
+  if (share->ypos != new_val) {
     g_object_set(share, "ypos", new_val, NULL);
   }
 }
@@ -332,7 +345,35 @@ void screen_share_zorder_changed(GtkSpinButton *spin, GtkListItem *list_item) {
 
   guint new_val = (guint)gtk_spin_button_get_value_as_int(spin);
 
-  if (share->xpos != new_val) {
+  if (share->zorder != new_val) {
     g_object_set(share, "zorder", new_val, NULL);
+  }
+}
+
+void screen_share_width_changed(GtkSpinButton *spin, GtkListItem *list_item) {
+  ScreenShare *share = SCREEN_SHARE(gtk_list_item_get_item(list_item));
+
+  if (share == NULL) {
+    return;
+  }
+
+  guint new_val = (guint)gtk_spin_button_get_value_as_int(spin);
+
+  if (share->width != new_val) {
+    g_object_set(share, "width", new_val, NULL);
+  }
+}
+
+void screen_share_height_changed(GtkSpinButton *spin, GtkListItem *list_item) {
+  ScreenShare *share = SCREEN_SHARE(gtk_list_item_get_item(list_item));
+
+  if (share == NULL) {
+    return;
+  }
+
+  guint new_val = (guint)gtk_spin_button_get_value_as_int(spin);
+
+  if (share->height != new_val) {
+    g_object_set(share, "height", new_val, NULL);
   }
 }

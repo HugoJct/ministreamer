@@ -37,5 +37,7 @@ void screen_share_remove_from_ministreamer_pipeline(
 void screen_share_xpos_changed(GtkSpinButton *spin, GtkListItem *list_item);
 void screen_share_ypos_changed(GtkSpinButton *spin, GtkListItem *list_item);
 void screen_share_zorder_changed(GtkSpinButton *spin, GtkListItem *list_item);
+void screen_share_width_changed(GtkSpinButton *spin, GtkListItem *list_item);
+void screen_share_height_changed(GtkSpinButton *spin, GtkListItem *list_item);
 
 #endif

@@ -32,6 +32,8 @@ static void ministreamer_window_class_init(MinistreamerWindowClass *klass) {
   gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(klass), screen_share_xpos_changed);
   gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(klass), screen_share_ypos_changed);
   gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(klass), screen_share_zorder_changed);
+  gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(klass), screen_share_width_changed);
+  gtk_widget_class_bind_template_callback(GTK_WIDGET_CLASS(klass), screen_share_height_changed);
 }
 
 static void ministreamer_window_init(MinistreamerWindow *self) {
