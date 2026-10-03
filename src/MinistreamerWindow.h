@@ -10,6 +10,7 @@ struct _MinistreamerWindow {
 
   GtkWidget *video;
   GtkWidget *column_view;
+  GtkWidget *record_button;
   GtkWidget *remove_screenshare_button;
   GtkWidget *add_screenshare_button;
   GtkWidget *quit_button;

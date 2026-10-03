@@ -45,6 +45,20 @@ static void ministreamer_app_remove_screenshare(GtkButton *self,
                                                  app->pipeline);
 }
 
+static void ministreamer_app_toggle_record(GtkButton *self,
+                                           gpointer user_data) {
+  MinistreamerApp *app = MINISTREAMER_APP(user_data);
+  if (ministreamer_gst_pipeline_is_recording(app->pipeline) == FALSE) {
+
+    ministreamer_gst_pipeline_enable_record(app->pipeline);
+    g_print("start rec\n");
+  } else {
+
+    ministreamer_gst_pipeline_disable_record(app->pipeline);
+    g_print("stop rec\n");
+  }
+}
+
 static GActionEntry app_entries[] = {
     {"preferences", preferences_activated, NULL, NULL, NULL},
     {"quit", ministreamer_app_quit_clicked, NULL, NULL, NULL},
@@ -74,6 +88,9 @@ static void ministreamer_app_activate(GApplication *app) {
 
   g_signal_connect(win->remove_screenshare_button, "clicked",
                    G_CALLBACK(ministreamer_app_remove_screenshare), self);
+
+  g_signal_connect(win->record_button, "clicked",
+                   G_CALLBACK(ministreamer_app_toggle_record), self);
 
   g_autoptr(GdkPaintable) paintable = NULL;
   g_object_get(self->pipeline->displaysink, "paintable", &paintable, NULL);

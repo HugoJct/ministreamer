@@ -254,6 +254,12 @@
             </child>
 
             <child>
+              <object id="record_button" class="GtkButton">
+                <property name="label">Toggle record</property>
+              </object>
+            </child>
+
+            <child>
               <object id="add_screenshare_button" class="GtkButton">
                 <property name="label">Add screen capture</property>
               </object>
